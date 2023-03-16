@@ -8,10 +8,15 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class ToDoViewModel(val repository: TodoRepository):ViewModel() {
-    val allNotes = repository.allNote
+    var allNotes = repository.allNote
+
+
+
      fun insertData(noteEntity: NoteEntity) {
          viewModelScope.launch {
              repository.insertData(noteEntity)
+
+
          }
      }
          fun deleteData(noteEntity: NoteEntity){

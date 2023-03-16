@@ -3,6 +3,8 @@ package com.example.todoapp.view
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -19,7 +21,7 @@ import com.example.todoapp.viewmodel.TodoFactory
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.UpdateListner {
-    lateinit var binding:ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
     lateinit var adapter: ToDoAdapter
     lateinit var viewModel: ToDoViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,10 +41,14 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        val position = viewHolder.adapterPosition
+                val position = viewHolder.adapterPosition
                 val deleteData = adapter.list[position]
                 viewModel.deleteData(deleteData)
-              Snackbar.make(binding.rcView,"data is deleted Successfullty ",Snackbar.LENGTH_LONG)
+                Snackbar.make(
+                    binding.rcView,
+                    "data is deleted Successfullty ",
+                    Snackbar.LENGTH_LONG
+                )
             }
 
 
@@ -51,13 +57,14 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
             attachToRecyclerView(binding.rcView)
         }
         val dao = TodoDataBase.getInstance(this).getDao()
-        viewModel = ViewModelProvider(this,TodoFactory(TodoRepository(dao))).get(ToDoViewModel::class.java)
+        viewModel =
+            ViewModelProvider(this, TodoFactory(TodoRepository(dao))).get(ToDoViewModel::class.java)
         binding.btnFloating.setOnClickListener {
-            val intent = Intent(this,EditActivity::class.java)
+            val intent = Intent(this, EditActivity::class.java)
             startActivity(intent)
             this.finish()
         }
-        adapter = ToDoAdapter(this,this,this)
+        adapter = ToDoAdapter(this, this, this)
         binding.rcView.layoutManager = LinearLayoutManager(this)
         binding.rcView.adapter = adapter
 
@@ -69,15 +76,46 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
     }
 
     override fun delete(noteEntity: NoteEntity) {
-        viewModel.deleteData(noteEntity)
+        val builder = AlertDialog.Builder(this)
+        //set title for alert dialog
+        builder.setTitle("Delete File")
+        //set message for alert dialog
+        builder.setMessage("Do You Want To Delete ")
+        builder.setIcon(android.R.drawable.ic_dialog_alert)
+
+        //performing positive action
+        builder.setPositiveButton("Yes") { dialogInterface, which ->
+            viewModel.deleteData(noteEntity)
+            Toast.makeText(applicationContext, "clicked yes", Toast.LENGTH_LONG).show()
+        }
+        //performing cancel action
+        builder.setNeutralButton("Cancel") { dialogInterface, which ->
+            Toast.makeText(
+                applicationContext,
+                "clicked cancel\n operation cancel",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        builder.setNegativeButton("No") { dialogInterface, which ->
+            Toast.makeText(applicationContext, "clicked No", Toast.LENGTH_LONG).show()
+        }
+        val alertDialog: AlertDialog = builder.create()
+
+        alertDialog.setCancelable(false)
+        alertDialog.show()
     }
+
 
     override fun update(noteEntity: NoteEntity) {
         val intent = Intent(this,EditActivity::class.java)
-        intent.putExtra("type","update")
-        intent.putExtra("title",noteEntity.noteTitle)
-        intent.putExtra("desc",noteEntity.noteDescription)
+        intent.putExtra("noteType", "Edit")
+        intent.putExtra("noteTitle",noteEntity.noteTitle)
+        intent.putExtra("noteDescription",noteEntity.noteDescription)
+        intent.putExtra("id",noteEntity.id)
         startActivity(intent)
 
+
     }
+
 }
