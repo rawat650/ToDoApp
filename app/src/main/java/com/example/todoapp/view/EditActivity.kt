@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.room.util.findColumnIndexBySuffix
 import com.example.todoapp.databinding.ActivityEditBinding
 import com.example.todoapp.repository.TodoRepository
 import com.example.todoapp.room.NoteEntity
@@ -13,7 +14,7 @@ import com.example.todoapp.room.TodoDataBase
 import com.example.todoapp.viewmodel.ToDoViewModel
 import com.example.todoapp.viewmodel.TodoFactory
 
-class EditActivity : AppCompatActivity() {
+class EditActivity : BaseActivity() {
     lateinit var binding: ActivityEditBinding
     lateinit var viewModel: ToDoViewModel
     var noteId = -1
@@ -47,19 +48,25 @@ class EditActivity : AppCompatActivity() {
                     updatedNote.id = noteId
                     viewModel.updateData(updatedNote)
                     startActivity(Intent(applicationContext, MainActivity::class.java))
-                    Toast.makeText(this, "Note Updated..", Toast.LENGTH_LONG).show()
+                    showToast("Note Updated..")
+
                 }
             } else {
                 if (noteTitle.isNotEmpty() && noteDescription.isNotEmpty()) {
                     viewModel.insertData(NoteEntity(noteTitle, noteDescription))
                     startActivity(Intent(applicationContext, MainActivity::class.java))
+//                    finish()
 
-                    Toast.makeText(this, "$noteTitle Added", Toast.LENGTH_LONG).show()
+                   showToast("data Added")
+                }
+                else{
+                    showToast("field cannot be empty")
                 }
             }
-
+//finish()
 
         }
+
 
     }
 }

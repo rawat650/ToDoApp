@@ -1,6 +1,9 @@
 package com.example.todoapp.view
 
+import android.content.DialogInterface
+import android.content.DialogInterface.OnShowListener
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
@@ -20,7 +23,7 @@ import com.example.todoapp.viewmodel.ToDoViewModel
 import com.example.todoapp.viewmodel.TodoFactory
 import com.google.android.material.snackbar.Snackbar
 
-class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.UpdateListner {
+class MainActivity :BaseActivity() ,ToDoAdapter.DeleteListner,ToDoAdapter.UpdateListner {
     lateinit var binding: ActivityMainBinding
     lateinit var adapter: ToDoAdapter
     lateinit var viewModel: ToDoViewModel
@@ -28,6 +31,7 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -62,7 +66,7 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
         binding.btnFloating.setOnClickListener {
             val intent = Intent(this, EditActivity::class.java)
             startActivity(intent)
-            this.finish()
+//            this.finish()
         }
         adapter = ToDoAdapter(this, this, this)
         binding.rcView.layoutManager = LinearLayoutManager(this)
@@ -79,6 +83,7 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
         val builder = AlertDialog.Builder(this)
         //set title for alert dialog
         builder.setTitle("Delete File")
+
         //set message for alert dialog
         builder.setMessage("Do You Want To Delete ")
         builder.setIcon(android.R.drawable.ic_dialog_alert)
@@ -88,13 +93,10 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
             viewModel.deleteData(noteEntity)
             Toast.makeText(applicationContext, "clicked yes", Toast.LENGTH_LONG).show()
         }
+
         //performing cancel action
         builder.setNeutralButton("Cancel") { dialogInterface, which ->
-            Toast.makeText(
-                applicationContext,
-                "clicked cancel\n operation cancel",
-                Toast.LENGTH_LONG
-            ).show()
+            showToast( "clicked cancel\n operation cancel",)
         }
 
         builder.setNegativeButton("No") { dialogInterface, which ->
@@ -103,10 +105,20 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
         val alertDialog: AlertDialog = builder.create()
 
         alertDialog.setCancelable(false)
+        alertDialog.setOnShowListener(object: OnShowListener{
+            override fun onShow(p0: DialogInterface?) {
+                alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED)
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.GREEN)
+
+            }
+
+        })
         alertDialog.show()
-    }
+        }
 
 
+
+// pass the
     override fun update(noteEntity: NoteEntity) {
         val intent = Intent(this,EditActivity::class.java)
         intent.putExtra("noteType", "Edit")
@@ -114,6 +126,7 @@ class MainActivity : AppCompatActivity(),ToDoAdapter.DeleteListner,ToDoAdapter.U
         intent.putExtra("noteDescription",noteEntity.noteDescription)
         intent.putExtra("id",noteEntity.id)
         startActivity(intent)
+
 
 
     }
